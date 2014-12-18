@@ -119,7 +119,7 @@ override LDFLAGS += -lpcap
 # Actual building
 ################################################################################
 
-PROGRAM_OBJECTS = main.o
+PROGRAM_OBJECTS = main.o capture.o callback.o
 
 all: $(PROGRAM_NAME) | bin_dir
 

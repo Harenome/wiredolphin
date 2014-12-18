@@ -14,13 +14,26 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <sysexits.h>
 
+#include "wiredolphin/capture.h"
 #include "wiredolphin/version.h"
 
 int main (int argc, char ** argv)
 {
-    fprintf (stderr, "wiredolphin version %u.%u.%u, 2014\n",
+    --argc;
+    if (argc == 0)
+    {
+        fprintf (stderr, "Usage: %s <interface>\n", * argv);
+        exit (EX_USAGE);
+    }
+    ++argv;
+
+    fprintf (stderr, "wiredolphin version %u.%u.%u, 2014\n\n",
         WIREDOLPHIN_VERSION_MAJOR, WIREDOLPHIN_VERSION_MINOR,
         WIREDOLPHIN_VERSION_PATCH);
-    fprintf (stderr, "This program does not do anything yet.\n");
+
+    monitor_interface (* argv, "any");
+
+    exit (EXIT_SUCCESS);
 }
