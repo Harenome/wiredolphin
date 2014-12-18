@@ -1,0 +1,34 @@
+## Misc.
+*.old
+*~
+
+## Vim files
+*.swp
+
+## C
+*.[ao]
+*.lib
+*.ko
+*.dll
+*.so
+*.so.*
+*.dylib
+
+## Tags
+tags
+.tags
+
+## Various dirs.
+doc/
+obj/
+bin/
+bytecode/
+
+## Executables
+a.out
+*.exe
+*.out
+*.app
+
+# Archives
+*.tar.gz
