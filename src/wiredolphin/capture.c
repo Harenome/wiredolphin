@@ -45,7 +45,7 @@ void monitor_interface (const char * interface, const char * filter)
         if (capture != NULL)
         {
             pcap_compile (capture, & compiled_filter, filter, 0, 0);
-            pcap_loop (capture, -1, callback_raw_packet, NULL);
+            pcap_loop (capture, -1, callback_info_complete, NULL);
         }
         else
             fprintf (stderr, "Error: Could not open capture.\n");

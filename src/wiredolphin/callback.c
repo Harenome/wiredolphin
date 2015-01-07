@@ -14,6 +14,22 @@
 
 #include "wiredolphin/callback.h"
 
+static inline void __raw_packet_print (const u_char * bytes, size_t size);
+
+void __raw_packet_print (const u_char * bytes, size_t size)
+{
+    /* Print the packet. */
+    for (size_t i = 0; i < size; ++i)
+    {
+        /* Print 16 bytes per line. */
+        if (! (i % 16) && i)
+            printf ("\n");
+        printf ("%.2x ", bytes[i]);
+    }
+
+    printf ("\n\n");
+}
+
 void callback_raw_packet (u_char * user, const struct pcap_pkthdr * header,
     const u_char * bytes)
 {
@@ -21,31 +37,33 @@ void callback_raw_packet (u_char * user, const struct pcap_pkthdr * header,
     (void) user;
 
     /* Print the packet. */
-    for (size_t i = 0; i < header->caplen; ++i)
-    {
-        /* Print 16 bytes per line. */
-        if (! (i % 16))
-            printf ("\n");
-        printf ("%.2x ", bytes[i]);
-    }
-    /* Separate packets. */
-    printf ("\n\n");
+    __raw_packet_print (bytes, header->caplen);
 }
 
 void callback_info_concise (u_char * user, const struct pcap_pkthdr * header,
     const u_char * bytes)
 {
-    (void) user; (void) header; (void) bytes;
+    /* Ignore user and header. */
+    (void) user; (void) header;
+
+    header_ethernet_print_synthetic (bytes);
 }
 
 void callback_info_synthetic (u_char * user, const struct pcap_pkthdr * header,
     const u_char * bytes)
 {
-    (void) user; (void) header; (void) bytes;
+    /* Ignore user and header. */
+    (void) user; (void) header;
+
+    header_ethernet_print_synthetic (bytes);
 }
 
 void callback_info_complete (u_char * user, const struct pcap_pkthdr * header,
     const u_char * bytes)
 {
-    (void) user; (void) header; (void) bytes;
+    /* Ignore user. */
+    (void) user;
+
+    __raw_packet_print (bytes, header->caplen);
+    header_ethernet_print_complete (bytes);
 }

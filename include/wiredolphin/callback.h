@@ -17,6 +17,8 @@
 
 #include <pcap/pcap.h>
 
+#include "wiredolphin/headers.h"
+
 /**
  * \brief Merely print a packet.
  */
