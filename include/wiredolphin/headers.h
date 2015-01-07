@@ -19,9 +19,11 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #include <arpa/inet.h>
 #include <net/ethernet.h>
+#include <netinet/ip.h>
 
 #include <pcap/pcap.h>
 
@@ -56,5 +58,44 @@ uint16_t header_ethernet_packet_type (const u_char * bytes);
  * \return The data.
  */
 const u_char * header_ethernet_data (const u_char * bytes);
+
+////////////////////////////////////////////////////////////////////////////////
+// IP headers.
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * \brief Print complete information on an IPv4 header.
+ * \param stream Output stream.
+ * \param bytes The IPv4 header.
+ */
+void header_ipv4_print_complete (FILE * stream, const u_char * bytes);
+
+/**
+ * \brief Print synthetic information on an IPv4 header.
+ * \param stream Output stream.
+ * \param bytes The IPv4 header.
+ */
+void header_ipv4_print_synthetic (FILE * stream, const u_char * bytes);
+
+/**
+ * \brief Print concise information on an IPv4 header.
+ * \param stream Output stream.
+ * \param bytes The IPv4 header.
+ */
+void header_ipv4_print_concise (FILE * stream, const u_char * bytes);
+
+/**
+ * \brief Get an IPv4 header's data.
+ * \param bytes The IPv4 header.
+ * \return The data.
+ */
+const u_char * header_ipv4_data (const u_char * bytes);
+
+/**
+ * \brief Get an IPv4 header's protocol.
+ * \param bytes The IPv4 header.
+ * \return The protocol.
+ */
+u_int8_t header_ipv4_protocol (const u_char * bytes);
 
 #endif /* __HEADERS_H__ */
