@@ -20,50 +20,64 @@
 
 /**
  * \brief Print the ethernet protocol ID.
+ * \param stream Output stream.
  * \param protocol_id Protocol ID.
  */
-static inline void __header_ethernet_print_protocol (uint16_t protocol_id);
+static inline void __header_ethernet_print_protocol (FILE * stream,
+        uint16_t protocol_id);
 
 /**
  * \brief Print a MAC address.
+ * \param stream Output stream.
  * \param address MAC address.
  */
-static inline void __header_ethernet_print_mac (const u_int8_t address[ETH_ALEN]);
+static inline void __header_ethernet_print_mac (FILE * stream,
+        const u_int8_t address[ETH_ALEN]);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Ethernet frames.
 ////////////////////////////////////////////////////////////////////////////////
 
-void header_ethernet_print_complete (const u_char * bytes)
+void header_ethernet_print_complete (FILE * const stream,
+        const u_char * const bytes)
 {
     const struct ether_header * header = (const struct ether_header *) bytes;
 
-    printf ("Ethernet header\n===============\n");
-    printf ("%-12s\t", "Destination:");
-    __header_ethernet_print_mac (header->ether_dhost);
-    printf ("\n");
+    fprintf (stream, "Ethernet header\n===============\n");
 
-    printf ("%-12s\t", "Source:");
-    __header_ethernet_print_mac (header->ether_shost);
-    printf ("\n");
+    /* Print the source. */
+    fprintf (stream, "%-12s\t", "Source:");
+    __header_ethernet_print_mac (stream, header->ether_shost);
+    fprintf (stream, "\n");
 
-    printf ("%-12s\t", "Packet type:");
-    __header_ethernet_print_protocol (ntohs (header->ether_type));
-    printf ("\n\n");
+    /* Print the destination. */
+    fprintf (stream, "%-12s\t", "Destination:");
+    __header_ethernet_print_mac (stream, header->ether_dhost);
+    fprintf (stream, "\n");
+
+    /* Print the packet type. */
+    fprintf (stream, "%-12s\t", "Packet type:");
+    __header_ethernet_print_protocol (stream, ntohs (header->ether_type));
+    fprintf (stream, "\n");
+
+    fprintf (stream, "\n");
 }
 
-void header_ethernet_print_synthetic (const u_char * bytes)
+void header_ethernet_print_synthetic (FILE * const stream,
+        const u_char * const bytes)
 {
     const struct ether_header * header = (const struct ether_header *) bytes;
-    __header_ethernet_print_mac (header->ether_dhost);
-    printf (" -> ");
-    __header_ethernet_print_mac (header->ether_shost);
-    printf (", ");
-    __header_ethernet_print_protocol (ntohs (header->ether_type));
-    printf ("\n");
+
+    /* <source> -> <destination>, <packet type> */
+    __header_ethernet_print_mac (stream, header->ether_shost);
+    fprintf (stream, " -> ");
+    __header_ethernet_print_mac (stream, header->ether_dhost);
+    fprintf (stream, ", ");
+    __header_ethernet_print_protocol (stream, ntohs (header->ether_type));
+    fprintf (stream, "\n");
 }
 
-uint16_t header_ethernet_packet_type (const u_char * bytes)
+uint16_t header_ethernet_packet_type (const u_char * const bytes)
 {
     const struct ether_header * header = (const struct ether_header *) bytes;
     return ntohs (header->ether_type);
@@ -78,7 +92,8 @@ const u_char * header_ethernet_data (const u_char * bytes)
 // Misc.
 ////////////////////////////////////////////////////////////////////////////////
 
-void __header_ethernet_print_protocol (uint16_t protocol_id)
+void __header_ethernet_print_protocol (FILE * const stream,
+        uint16_t protocol_id)
 {
     const char * protocol_string = "";
     switch (protocol_id)
@@ -108,11 +123,13 @@ void __header_ethernet_print_protocol (uint16_t protocol_id)
         default:
             protocol_string = "Unknown"; break;
     }
-    printf ("%s", protocol_string);
+    fprintf (stream, "%s", protocol_string);
 }
 
-void __header_ethernet_print_mac (const u_int8_t address[ETH_ALEN])
+void __header_ethernet_print_mac (FILE * const stream,
+        const u_int8_t address[ETH_ALEN])
 {
+    /* Print the subparts of the address, separated by colons. */
     for (size_t i = 0; i < ETH_ALEN; ++i)
-        printf ("%.2x%c", address[i], i < ETH_ALEN - 1 ? ':' : '\0');
+        fprintf (stream, "%.2x%c", address[i], i < ETH_ALEN - 1 ? ':' : '\0');
 }

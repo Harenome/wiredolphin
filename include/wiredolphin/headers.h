@@ -31,15 +31,17 @@
 
 /**
  * \brief Print complete information on an ethernet frame.
+ * \param stream Output stream.
  * \param bytes The ethernet frame.
  */
-void header_ethernet_print_complete (const u_char * bytes);
+void header_ethernet_print_complete (FILE * stream, const u_char * bytes);
 
 /**
  * \brief Print synthetic information on an ethernet frame.
+ * \param stream Output stream.
  * \param bytes The ethernet frame.
  */
-void header_ethernet_print_synthetic (const u_char * bytes);
+void header_ethernet_print_synthetic (FILE * stream, const u_char * bytes);
 
 /**
  * \brief Get the packet type from an ethernet frame.
