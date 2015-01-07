@@ -4,6 +4,8 @@
  * \author RAZANAJATO RANAIVOARIVONY Harenome
  * \date 2014
  * \copyright WTFPLv2
+ *
+ * Utilities to extract and print information from various frames and headers.
  */
 /* This program is free software. It comes without any warranty, to
  * the extent permitted by applicable law. You can redistribute it
@@ -23,12 +25,34 @@
 
 #include <pcap/pcap.h>
 
+////////////////////////////////////////////////////////////////////////////////
+// Ethernet frames.
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * \brief Print complete information on an ethernet frame.
+ * \param bytes The ethernet frame.
+ */
 void header_ethernet_print_complete (const u_char * bytes);
 
+/**
+ * \brief Print synthetic information on an ethernet frame.
+ * \param bytes The ethernet frame.
+ */
 void header_ethernet_print_synthetic (const u_char * bytes);
 
+/**
+ * \brief Get the packet type from an ethernet frame.
+ * \param bytes The ethernet frame.
+ * \return The packet type (see the \c ETHERTYPE_x macros in \c net/ethernet.h).
+ */
 uint16_t header_ethernet_packet_type (const u_char * bytes);
 
+/**
+ * \brief Get a pointer to the data from an ethernet frame.
+ * \param bytes The ethernet frame.
+ * \return The data.
+ */
 const u_char * header_ethernet_data (const u_char * bytes);
 
 #endif /* __HEADERS_H__ */

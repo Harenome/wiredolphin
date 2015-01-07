@@ -21,16 +21,37 @@
 
 /**
  * \brief Merely print a packet.
+ * \param user Additional user parameters.
+ * \param header pcap header.
+ * \param bytes Data.
  */
 void callback_raw_packet (u_char * user, const struct pcap_pkthdr * header,
     const u_char * bytes);
 
+/**
+ * \brief Print concise information on a packet.
+ * \param user Additional user parameters.
+ * \param header pcap header.
+ * \param bytes Data.
+ */
 void callback_info_concise (u_char * user, const struct pcap_pkthdr * header,
     const u_char * bytes);
 
+/**
+ * \brief Print synthetic information on a packet.
+ * \param user Additional user parameters.
+ * \param header pcap header.
+ * \param bytes Data.
+ */
 void callback_info_synthetic (u_char * user, const struct pcap_pkthdr * header,
     const u_char * bytes);
 
+/**
+ * \brief Print complete information on a packet.
+ * \param user Additional user parameters.
+ * \param header pcap header.
+ * \param bytes Data.
+ */
 void callback_info_complete (u_char * user, const struct pcap_pkthdr * header,
     const u_char * bytes);
 

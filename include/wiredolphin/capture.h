@@ -24,8 +24,19 @@
 
 #include "wiredolphin/callback.h"
 
+/**
+ * \brief Check whether an interface is available.
+ * \param interface Interface name.
+ * \retval true If the interface is available.
+ * \retval false otherwise.
+ */
 bool check_interface (const char * interface);
 
+/**
+ * \brief Monitor an interface using a filter.
+ * \param interface Interface name.
+ * \param filter Filter.
+ */
 void monitor_interface (const char * interface, const char * filter);
 
 #endif /* __CAPTURE_H__ */
