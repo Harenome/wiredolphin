@@ -18,7 +18,7 @@
 /**
  * \brief Wiredolphin major version.
  */
-static const unsigned int WIREDOLPHIN_VERSION_MAJOR = 0;
+static const unsigned int WIREDOLPHIN_VERSION_MAJOR = 1;
 
 /**
  * \brief Wiredolphin minor version.
