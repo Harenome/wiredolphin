@@ -15,6 +15,11 @@
 #ifndef __CALLBACK_H__
 #define __CALLBACK_H__
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdbool.h>
+#include <string.h>
+
 #include <pcap/pcap.h>
 
 #include "wiredolphin/headers.h"

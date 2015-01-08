@@ -18,8 +18,30 @@
 // Static utilities.
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * \brief Print a name and underline it.
+ * \param stream Output stream.
+ * \param name Name.
+ */
+static inline void __print_name (FILE * stream, const char * name);
+
+/**
+ * \brief Raw print a packet.
+ * \param stream Output stream.
+ * \param bytes Packet.
+ * \param size Packet size.
+ */
 static inline void __raw_packet_print (FILE * stream,
         const u_char * bytes, size_t size);
+
+/**
+ * \brief Print bytes.
+ * \param stream Output stream.
+ * \param bytes First byte.
+ * \param limit Byte following the last byte.
+ */
+static inline void __print_bytes (FILE * stream, const u_char * bytes,
+        const u_char * limit);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Callbacks.
@@ -58,6 +80,8 @@ void callback_info_complete (u_char * user, const struct pcap_pkthdr * header,
 {
     /* Ignore user. */
     (void) user;
+
+    const u_char * limit = bytes + header->caplen;
 
     fprintf (stdout,
             "*****************************************************************"
@@ -124,11 +148,57 @@ void callback_info_complete (u_char * user, const struct pcap_pkthdr * header,
             default:
                 break;
         }
+
+    if (bytes != NULL)
+    {
+        #define __text_application(port,name) \
+            if (source_port == (port) || dest_port == (port)) \
+            { \
+                __print_name (stdout, (name)); \
+                __print_bytes (stdout, bytes, limit); \
+                fprintf (stdout, "\n\n"); \
+            }
+
+        #define __encrypted_text_application(port,name) \
+            if (source_port == (port) || dest_port == (port)) \
+            { \
+                __print_name (stdout, (name)); \
+                __raw_packet_print (stdout, bytes, (size_t) (limit - bytes)); \
+            }
+
+        __text_application (20, "FTP data");
+        __text_application (21, "FTP control");
+        __text_application (25, "SMTP");
+        __text_application (80, "HTTP");
+        __text_application (110, "POP");
+        __text_application (143, "IMAP");
+
+        __encrypted_text_application (443, "HTTPS");
+        __encrypted_text_application (465, "Encrypted SMTP");
+        __encrypted_text_application (993, "Encrypted IMAP");
+        __encrypted_text_application (995, "Encrypted POP");
+
+        #undef __text_application
+        #undef __encrypted_text_application
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Misc.
 ////////////////////////////////////////////////////////////////////////////////
+
+void __print_name (FILE * const stream, const char * const name)
+{
+    size_t name_size = strlen (name);
+    char buffer[name_size + 1];
+
+    /* Fill the buffer with '=' characters. */
+    for (size_t i = 0; i < name_size; ++i)
+        buffer[i] = '=';
+    buffer[name_size] = '\0';
+
+    fprintf (stream, "%s\n%s\n", name, buffer);
+}
 
 void __raw_packet_print (FILE * const stream, const u_char * const bytes,
         size_t size)
@@ -145,3 +215,9 @@ void __raw_packet_print (FILE * const stream, const u_char * const bytes,
     fprintf (stream, "\n\n");
 }
 
+void __print_bytes (FILE * const stream, const u_char * bytes,
+        const u_char * const limit)
+{
+    for ( ; bytes < limit; ++bytes)
+        fprintf (stream, "%c", * bytes);
+}

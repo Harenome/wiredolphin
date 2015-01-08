@@ -648,8 +648,9 @@ void header_tcp4_print_complete (FILE * stream, const u_char * bytes)
 
     fprintf (stream, "TCP header\n==========\n");
 
-    fprintf (stream, "%-24s\t%u\n", "Source port:", header->th_sport);
-    fprintf (stream, "%-24s\t%u\n", "Destination port:", header->th_dport);
+    fprintf (stream, "%-24s\t%u\n", "Source port:", ntohs (header->th_sport));
+    fprintf (stream, "%-24s\t%u\n", "Destination port:",
+            ntohs (header->th_dport));
     fprintf (stream, "%-24s\t%u\n", "Sequence number:", header->th_seq);
     fprintf (stream, "%-24s\t%u\n", "Acknowledgement number:", header->th_ack);
     fprintf (stream, "%-24s\t%u\n", "Data offset:", header->th_off);
@@ -683,13 +684,13 @@ const u_char * header_tcp4_data (const u_char * bytes)
 u_int16_t header_tcp4_source_port (const u_char * bytes)
 {
     const struct tcphdr * header = (const struct tcphdr *) bytes;
-    return header->th_sport;
+    return ntohs (header->th_sport);
 }
 
 u_int16_t header_tcp4_dest_port (const u_char * bytes)
 {
     const struct tcphdr * header = (const struct tcphdr *) bytes;
-    return header->th_dport;
+    return ntohs (header->th_dport);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -702,8 +703,9 @@ void header_udp4_print_complete (FILE * stream, const u_char * bytes)
 
     fprintf (stream, "UDP header\n==========\n");
 
-    fprintf (stream, "%-20s\t%u\n", "Source port:", header->uh_sport);
-    fprintf (stream, "%-20s\t%u\n", "Destination port:", header->uh_sport);
+    fprintf (stream, "%-20s\t%u\n", "Source port:", ntohs (header->uh_sport));
+    fprintf (stream, "%-20s\t%u\n", "Destination port:",
+            ntohs (header->uh_sport));
     fprintf (stream, "%-20s\t%u\n", "Length:", header->uh_ulen);
 
     fprintf (stream, "\n");
@@ -727,13 +729,13 @@ const u_char * header_udp4_data (const u_char * bytes)
 u_int16_t header_udp4_source_port (const u_char * bytes)
 {
     const struct udphdr * header = (const struct udphdr *) bytes;
-    return header->uh_sport;
+    return ntohs (header->uh_sport);
 }
 
 u_int16_t header_udp4_dest_port (const u_char * bytes)
 {
     const struct udphdr * header = (const struct udphdr *) bytes;
-    return header->uh_dport;
+    return ntohs (header->uh_dport);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
