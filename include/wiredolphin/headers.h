@@ -27,6 +27,7 @@
 #include <netinet/ether.h>
 #include <net/if_arp.h>
 #include <netinet/ip_icmp.h>
+#include <netinet/tcp.h>
 #include <netinet/udp.h>
 
 #include <pcap/pcap.h>
@@ -153,6 +154,38 @@ void header_icmp4_print_synthetic (FILE * stream, const u_char * bytes);
 void header_icmp4_print_concise (FILE * stream, const u_char * bytes);
 
 ////////////////////////////////////////////////////////////////////////////////
+// TCP headers.
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * \brief Print complete information on a TCP header.
+ * \param stream Output stream.
+ * \param bytes The TCP header.
+ */
+void header_tcp4_print_complete (FILE * stream, const u_char * bytes);
+
+/**
+ * \brief Print synthetic information on a TCP header.
+ * \param stream Output stream.
+ * \param bytes The TCP header.
+ */
+void header_tcp4_print_synthetic (FILE * stream, const u_char * bytes);
+
+/**
+ * \brief Print concise information on a TCP header.
+ * \param stream Output stream.
+ * \param bytes The TCP header.
+ */
+void header_tcp4_print_concise (FILE * stream, const u_char * bytes);
+
+/**
+ * \brief Get a TCP packet's data.
+ * \param bytes The TCP header.
+ * \return The data.
+ */
+const u_char * header_tcp4_data (const u_char * bytes);
+
+////////////////////////////////////////////////////////////////////////////////
 // UDP headers.
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -164,18 +197,18 @@ void header_icmp4_print_concise (FILE * stream, const u_char * bytes);
 void header_udp4_print_complete (FILE * stream, const u_char * bytes);
 
 /**
- * \brief Print complete information on an UDP header.
+ * \brief Print synthetic information on an UDP header.
  * \param stream Output stream.
  * \param bytes The UDP header.
  */
-void header_udp4_print_complete (FILE * stream, const u_char * bytes);
+void header_udp4_print_synthetic (FILE * stream, const u_char * bytes);
 
 /**
- * \brief Print complete information on an UDP header.
+ * \brief Print concise information on an UDP header.
  * \param stream Output stream.
  * \param bytes The UDP header.
  */
-void header_udp4_print_complete (FILE * stream, const u_char * bytes);
+void header_udp4_print_concise (FILE * stream, const u_char * bytes);
 
 /**
  * \brief Get an UDP packet's data.

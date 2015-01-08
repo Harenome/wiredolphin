@@ -80,6 +80,14 @@ static inline void __header_icmp4_print_code (FILE * stream, u_int8_t type,
  */
 static inline void __header_icmp4_print_data (FILE * stream,
         const struct icmphdr * header);
+
+/**
+ * \brief Print TCP flags.
+ * \param stream Output stream.
+ * \param flags TCP flags.
+ */
+static inline void __header_tcp4_print_flags (FILE * stream, u_int8_t flags);
+
 /**
  * \brief List of IP protocols.
  *
@@ -631,6 +639,48 @@ void header_icmp4_print_concise (FILE * stream, const u_char * bytes)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// TCP headers.
+////////////////////////////////////////////////////////////////////////////////
+
+void header_tcp4_print_complete (FILE * stream, const u_char * bytes)
+{
+    const struct tcphdr * header = (const struct tcphdr *) bytes;
+
+    fprintf (stream, "TCP header\n==========\n");
+
+    fprintf (stream, "%-24s\t%u\n", "Source port:", header->th_sport);
+    fprintf (stream, "%-24s\t%u\n", "Destination port:", header->th_dport);
+    fprintf (stream, "%-24s\t%u\n", "Sequence number:", header->th_seq);
+    fprintf (stream, "%-24s\t%u\n", "Acknowledgement number:", header->th_ack);
+    fprintf (stream, "%-24s\t%u\n", "Data offset:", header->th_off);
+
+    fprintf (stream, "%-24s\t", "Flags:");
+    __header_tcp4_print_flags (stream, header->th_flags);
+    fprintf (stream, "\n");
+
+    fprintf (stream, "%-24s\t%u\n", "Window:", header->th_win);
+    fprintf (stream, "%-24s\t%u\n", "Urgen pointer:", header->th_win);
+
+}
+
+void header_tcp4_print_synthetic (FILE * stream, const u_char * bytes)
+{
+    (void) stream; (void) bytes;
+}
+
+void header_tcp4_print_concise (FILE * stream, const u_char * bytes)
+{
+    (void) stream; (void) bytes;
+}
+
+const u_char * header_tcp4_data (const u_char * bytes)
+{
+    const struct tcphdr * header = (const struct tcphdr *) bytes;
+    return bytes + (header->th_off * 4);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 // UDP headers.
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -843,5 +893,28 @@ void __header_icmp4_print_data (FILE * const stream,
     {
         fprintf (stream, "%-5s\t%u\n%-5s\t%u", "ID:", header->un.echo.id,
                 "Seq:", header->un.echo.sequence);
+    }
+}
+
+void __header_tcp4_print_flags (FILE * const stream, u_int8_t flags)
+{
+    flags &= 127;
+
+    if (! flags)
+        fprintf (stream, "None");
+    else
+    {
+        if (flags & TH_FIN)
+            fprintf (stream, "FIN%c", flags > TH_FIN ? ',' : '\0');
+        if (flags & TH_SYN)
+            fprintf (stream, "SYN%c", flags > TH_SYN ? ',' : '\0');
+        if (flags & TH_RST)
+            fprintf (stream, "RST%c", flags > TH_RST ? ',' : '\0');
+        if (flags & TH_PUSH)
+            fprintf (stream, "PUSH%c", flags > TH_PUSH ? ',' : '\0');
+        if (flags & TH_ACK)
+            fprintf (stream, "ACK%c", flags > TH_ACK ? ',' : '\0');
+        if (flags & TH_URG)
+            fprintf (stream, "URG%c", flags > TH_URG);
     }
 }

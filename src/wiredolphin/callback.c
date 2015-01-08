@@ -70,6 +70,7 @@ void callback_info_complete (u_char * user, const struct pcap_pkthdr * header,
     header_ethernet_print_complete (stdout, bytes);
 
     uint8_t next_protocol = 0;
+
     /* Print the underlying packet. */
     uint16_t packet_type = header_ethernet_packet_type (bytes);
     bytes = header_ethernet_data (bytes);
@@ -99,6 +100,9 @@ void callback_info_complete (u_char * user, const struct pcap_pkthdr * header,
                 bytes = NULL;
                 break;
             case 6: /* TCP */
+                if (packet_type == ETHERTYPE_IP)
+                    header_tcp4_print_complete (stdout, bytes);
+                bytes = header_tcp4_data (bytes);
                 break;
             case 17: /* UDP */
                 if (packet_type == ETHERTYPE_IP)
