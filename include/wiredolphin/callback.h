@@ -23,6 +23,7 @@
 #include <pcap/pcap.h>
 
 #include "wiredolphin/headers.h"
+#include "wiredolphin/bootp.h"
 
 /**
  * \brief Merely print a packet.

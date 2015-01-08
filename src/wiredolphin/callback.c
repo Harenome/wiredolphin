@@ -178,6 +178,10 @@ void callback_info_complete (u_char * user, const struct pcap_pkthdr * header,
         __encrypted_text_application (993, "Encrypted IMAP");
         __encrypted_text_application (995, "Encrypted POP");
 
+        if (source_port == 67 || dest_port == 67 || source_port == 68
+                || dest_port == 68)
+            bootp_print (stdout, (const bootp_header *) bytes);
+
         #undef __text_application
         #undef __encrypted_text_application
     }

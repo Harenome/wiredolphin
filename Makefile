@@ -119,7 +119,7 @@ override LDFLAGS += -lpcap
 # Actual building
 ################################################################################
 
-PROGRAM_OBJECTS = main.o capture.o callback.o headers.o
+PROGRAM_OBJECTS = main.o capture.o callback.o headers.o bootp.o
 
 all: $(PROGRAM_NAME) | bin_dir
 
@@ -136,6 +136,10 @@ $(PROGRAM_NAME): $(PROGRAM_OBJECTS) | bin_dir
 
 # Rules for object files
 main.o: main.c version.h
+capture.o: capture.c capture.h callback.h
+callback.o: callback.c callback.h headers.h bootp.h
+headers.o: headers.c headers.h
+bootp.o: bootp.c bootp.h
 
 ################################################################################
 # Documentation
