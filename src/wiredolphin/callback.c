@@ -96,10 +96,14 @@ void callback_info_complete (u_char * user, const struct pcap_pkthdr * header,
             case 1: /* ICMP */
                 if (packet_type == ETHERTYPE_IP)
                     header_icmp4_print_complete (stdout, bytes);
+                bytes = NULL;
                 break;
             case 6: /* TCP */
                 break;
             case 17: /* UDP */
+                if (packet_type == ETHERTYPE_IP)
+                    header_udp4_print_complete (stdout, bytes);
+                bytes = header_udp4_data (bytes);
                 break;
             default:
                 break;

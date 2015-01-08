@@ -530,19 +530,19 @@ void header_arp_print_complete (FILE * const stream, const u_char * bytes)
     fprintf (stream, "ARP header\n==========\n");
 
     /* Hardware type. */
-    fprintf (stream, "%-32s\t%u\n", "Hardware type:", header->ar_hrd);
+    fprintf (stream, "%-24s\t%u\n", "Hardware type:", header->ar_hrd);
 
     /* Protocol. */
-    fprintf (stream, "%-32s\t", "Protocol:");
+    fprintf (stream, "%-24s\t", "Protocol:");
     __header_ethernet_print_protocol (stream, header->ar_pro);
     fprintf (stream, "\n");
 
     /* Lengths. */
-    fprintf (stream, "%-32s\t%u\n", "Hardware length:", hln);
-    fprintf (stream, "%-32s\t%u\n", "Protocol length:", pln);
+    fprintf (stream, "%-24s\t%u\n", "Hardware length:", hln);
+    fprintf (stream, "%-24s\t%u\n", "Protocol length:", pln);
 
     /* Operation code. */
-    fprintf (stream, "%-32s\t", "Operation code:");
+    fprintf (stream, "%-24s\t", "Operation code:");
     __header_arp_print_opcode (stream, header->ar_op);
     fprintf (stream, "\n");
 
@@ -550,25 +550,25 @@ void header_arp_print_complete (FILE * const stream, const u_char * bytes)
 
     /* Sender hardware address. */
     if (hln == ETH_ALEN)
-        fprintf (stream, "%-32s\t%s\n", "Sender hardware address:",
+        fprintf (stream, "%-24s\t%s\n", "Sender hardware address:",
             ether_ntoa ((const struct ether_addr *) addresses));
 
     /* Sender protocol address. */
     addresses += hln;
     if (pln == 4)
-        fprintf (stream, "%-32s\t%s\n", "Sender protocol address:",
+        fprintf (stream, "%-24s\t%s\n", "Sender protocol address:",
             inet_ntoa (* ((const struct in_addr *) addresses)));
 
     /* Target hardware address. */
     addresses += pln;
     if (hln == ETH_ALEN)
-        fprintf (stream, "%-32s\t%s\n", "Target hardware address:",
+        fprintf (stream, "%-24s\t%s\n", "Target hardware address:",
             ether_ntoa ((const struct ether_addr *) addresses));
 
     /* Target protocol address. */
     addresses += hln;
     if (pln == 4)
-        fprintf (stream, "%-32s\t%s\n", "Target protocol address:",
+        fprintf (stream, "%-24s\t%s\n", "Target protocol address:",
             inet_ntoa (* ((const struct in_addr *) addresses)));
 
     fprintf (stream, "\n");
@@ -624,6 +624,39 @@ void header_icmp4_print_concise (FILE * stream, const u_char * bytes)
 {
     (void) stream; (void) bytes;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// UDP headers.
+////////////////////////////////////////////////////////////////////////////////
+
+void header_udp4_print_complete (FILE * stream, const u_char * bytes)
+{
+    const struct udphdr * header = (const struct udphdr *) bytes;
+
+    fprintf (stream, "UDP header\n==========\n");
+
+    fprintf (stream, "%-20s\t%u\n", "Source port:", header->uh_sport);
+    fprintf (stream, "%-20s\t%u\n", "Destination port:", header->uh_sport);
+    fprintf (stream, "%-20s\t%u\n", "Length:", header->uh_ulen);
+
+    fprintf (stream, "\n");
+}
+
+void header_udp4_print_synthetic (FILE * stream, const u_char * bytes)
+{
+    (void) stream; (void) bytes;
+}
+
+void header_udp4_print_concise (FILE * stream, const u_char * bytes)
+{
+    (void) stream; (void) bytes;
+}
+
+const u_char * header_udp4_data (const u_char * bytes)
+{
+    return bytes + sizeof (struct udphdr);
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Misc.
