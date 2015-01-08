@@ -85,13 +85,11 @@ void callback_info_concise (u_char * user, const struct pcap_pkthdr * header,
     {
         case ETHERTYPE_IP:
             next_protocol = header_ipv4_protocol (bytes);
-            /* header_ipv4_print_complete (stdout, bytes); */
             src_addr = header_ipv4_src (bytes);
             dest_addr = header_ipv4_dest (bytes);
             bytes = header_ipv4_data (bytes);
             break;
         case ETHERTYPE_ARP:
-            /* header_arp_print_complete (stdout, bytes); */
             bytes = NULL;
             break;
         case ETHERTYPE_IPV6:
@@ -310,6 +308,9 @@ void callback_info_complete (u_char * user, const struct pcap_pkthdr * header,
             bytes = NULL;
             break;
         case ETHERTYPE_IPV6:
+            next_protocol = header_ipv6_protocol (bytes);
+            header_ipv6_print_complete (stdout, bytes);
+            bytes = header_ipv6_data (bytes);
             break;
         default:
             break;
@@ -323,27 +324,24 @@ void callback_info_complete (u_char * user, const struct pcap_pkthdr * header,
         switch (next_protocol)
         {
             case 1: /* ICMP */
-                if (packet_type == ETHERTYPE_IP)
-                    header_icmp4_print_complete (stdout, bytes);
+                header_icmp4_print_complete (stdout, bytes);
                 bytes = NULL;
                 break;
             case 6: /* TCP */
-                if (packet_type == ETHERTYPE_IP)
-                {
-                    header_tcp4_print_complete (stdout, bytes);
-                    source_port = header_tcp4_source_port (bytes);
-                    dest_port = header_tcp4_dest_port (bytes);
-                    bytes = header_tcp4_data (bytes);
-                }
+                header_tcp4_print_complete (stdout, bytes);
+                source_port = header_tcp4_source_port (bytes);
+                dest_port = header_tcp4_dest_port (bytes);
+                bytes = header_tcp4_data (bytes);
                 break;
             case 17: /* UDP */
-                if (packet_type == ETHERTYPE_IP)
-                {
-                    header_udp4_print_complete (stdout, bytes);
-                    source_port = header_udp4_source_port (bytes);
-                    dest_port = header_udp4_dest_port (bytes);
-                    bytes = header_udp4_data (bytes);
-                }
+                header_udp4_print_complete (stdout, bytes);
+                source_port = header_udp4_source_port (bytes);
+                dest_port = header_udp4_dest_port (bytes);
+                bytes = header_udp4_data (bytes);
+                break;
+            case 58: /* ICMP v6 */
+                header_icmp6_print_complete (stdout, bytes);
+                bytes = NULL;
                 break;
             default:
                 break;

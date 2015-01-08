@@ -29,6 +29,8 @@
 #include <netinet/ip_icmp.h>
 #include <netinet/tcp.h>
 #include <netinet/udp.h>
+#include <netinet/ip6.h>
+#include <netinet/icmp6.h>
 
 #include <pcap/pcap.h>
 
@@ -103,9 +105,58 @@ const u_char * header_ipv4_data (const u_char * bytes);
  */
 u_int8_t header_ipv4_protocol (const u_char * bytes);
 
+/**
+ * \brief Get an IPv4 header's source address.
+ * \param bytes The IPv4 header.
+ * \return The source address.
+ */
 struct in_addr header_ipv4_src (const u_char * bytes);
 
+/**
+ * \brief Get an IPv4 header's destination address.
+ * \param bytes The IPv4 header.
+ * \return The destination address.
+ */
 struct in_addr header_ipv4_dest (const u_char * bytes);
+
+/**
+ * \brief Get an IPv6's next header.
+ * \param bytes The IPv6 header.
+ * \return The next header.
+ */
+const u_char * header_ipv6_data (const u_char * bytes);
+
+////////////////////////////////////////////////////////////////////////////////
+// IPv6 headers.
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * \brief Print complete information on an IPv6 header.
+ * \param stream Output stream.
+ * \param bytes The IPv6 header.
+ */
+void header_ipv6_print_complete (FILE * stream, const u_char * bytes);
+
+/**
+ * \brief Get an IPv6 header's protocol.
+ * \param bytes The IPv6 header.
+ * \return The protocol.
+ */
+u_int8_t header_ipv6_protocol (const u_char * bytes);
+
+/**
+ * \brief Get an IPv6 header's source address.
+ * \param bytes The IPv6 header.
+ * \return The source address.
+ */
+struct in6_addr header_ipv6_src (const u_char * bytes);
+
+/**
+ * \brief Get an IPv6 header's destination address.
+ * \param bytes The IPv6 header.
+ * \return The destination address.
+ */
+struct in6_addr header_ipv6_dest (const u_char * bytes);
 
 ////////////////////////////////////////////////////////////////////////////////
 // ARP headers.
@@ -156,6 +207,31 @@ void header_icmp4_print_synthetic (FILE * stream, const u_char * bytes);
  * \param bytes The ICMP header.
  */
 void header_icmp4_print_concise (FILE * stream, const u_char * bytes);
+
+////////////////////////////////////////////////////////////////////////////////
+// ICMPv6 headers.
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * \brief Print complete information on an ICMP header.
+ * \param stream Output stream.
+ * \param bytes The ICMP header.
+ */
+void header_icmp6_print_complete (FILE * stream, const u_char * bytes);
+
+/**
+ * \brief Print synthetic information on an ICMP header.
+ * \param stream Output stream.
+ * \param bytes The ICMP header.
+ */
+void header_icmp6_print_synthetic (FILE * stream, const u_char * bytes);
+
+/**
+ * \brief Print concise information on an ICMP header.
+ * \param stream Output stream.
+ * \param bytes The ICMP header.
+ */
+void header_icmp6_print_concise (FILE * stream, const u_char * bytes);
 
 ////////////////////////////////////////////////////////////////////////////////
 // TCP headers.

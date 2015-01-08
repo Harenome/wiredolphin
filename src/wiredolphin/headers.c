@@ -89,6 +89,13 @@ static inline void __header_icmp4_print_data (FILE * stream,
 static inline void __header_tcp4_print_flags (FILE * stream, u_int8_t flags);
 
 /**
+ * \brief Print ICMPv6 Types.
+ * \param stream Output stream.
+ * \param ICMPv6 type.
+ */
+static inline void __header_icmp6_print_type (FILE * stream, uint8_t type);
+
+/**
  * \brief List of IP protocols.
  *
  * According to Wikipedia(!):
@@ -542,6 +549,54 @@ struct in_addr header_ipv4_dest (const u_char * bytes)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// IPv6 headers.
+////////////////////////////////////////////////////////////////////////////////
+
+void header_ipv6_print_complete (FILE * stream, const u_char * bytes)
+{
+    char buffer[INET6_ADDRSTRLEN];
+    const struct ip6_hdr * header = (const struct ip6_hdr *) bytes;
+
+    fprintf (stream, "IPv6 header\n===========\n");
+    fprintf (stream, "%-16s\t%u\n", "Version:", 6); /* ??!! */
+    fprintf (stream, "%-16s\t%u\n", "Hop limit:",
+            header->ip6_ctlun.ip6_un1.ip6_un1_hlim);
+
+    struct in6_addr addr = header_ipv6_src (bytes);
+    inet_ntop (AF_INET6, & addr, buffer, INET6_ADDRSTRLEN);
+    fprintf (stream, "%-16s\t%s\n", "Source:", buffer);
+
+    addr = header_ipv6_dest (bytes);
+    inet_ntop (AF_INET6, & addr, buffer, INET6_ADDRSTRLEN);
+    fprintf (stream, "%-16s\t%s\n", "Destination:", buffer);
+
+    fprintf (stream, "\n");
+}
+
+u_int8_t header_ipv6_protocol (const u_char * bytes)
+{
+    const struct ip6_hdr * header = (const struct ip6_hdr *) bytes;
+    return header->ip6_ctlun.ip6_un1.ip6_un1_nxt;
+}
+
+struct in6_addr header_ipv6_src (const u_char * bytes)
+{
+    const struct ip6_hdr * header = (const struct ip6_hdr *) bytes;
+    return header->ip6_src;
+}
+
+struct in6_addr header_ipv6_dest (const u_char * bytes)
+{
+    const struct ip6_hdr * header = (const struct ip6_hdr *) bytes;
+    return header->ip6_dst;
+}
+
+const u_char * header_ipv6_data (const u_char * bytes)
+{
+    return bytes + sizeof (struct ip6_hdr);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // ARP headers.
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -648,6 +703,23 @@ void header_icmp4_print_concise (FILE * stream, const u_char * bytes)
 {
     (void) stream; (void) bytes;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// ICMPv6 headers.
+////////////////////////////////////////////////////////////////////////////////
+
+void header_icmp6_print_complete (FILE * stream, const u_char * bytes)
+{
+    const struct icmp6_hdr * header = (const struct icmp6_hdr *) bytes;
+
+    __header_icmp6_print_type (stream, header->icmp6_type);
+
+    fprintf (stream, "\n");
+}
+
+void header_icmp6_print_synthetic (FILE * stream, const u_char * bytes);
+
+void header_icmp6_print_concise (FILE * stream, const u_char * bytes);
 
 ////////////////////////////////////////////////////////////////////////////////
 // TCP headers.
@@ -934,7 +1006,7 @@ void __header_icmp4_print_data (FILE * const stream,
 
 void __header_tcp4_print_flags (FILE * const stream, u_int8_t flags)
 {
-    flags &= 127;
+    flags = flags & 127;
 
     if (! flags)
         fprintf (stream, "None");
@@ -951,6 +1023,30 @@ void __header_tcp4_print_flags (FILE * const stream, u_int8_t flags)
         if (flags & TH_ACK)
             fprintf (stream, "ACK%c", flags > TH_ACK ? ',' : '\0');
         if (flags & TH_URG)
-            fprintf (stream, "URG%c", flags > TH_URG);
+            fprintf (stream, "URG");
     }
+}
+
+void __header_icmp6_print_type (FILE * stream, uint8_t type)
+{
+    static const char * icmp6_types[] =
+    {
+        [1]   = "Destination unreachable",
+        [2]   = "Packet too big",
+        [3]   = "Time exceeded",
+        [4]   = "Parameter problem",
+        [128] = "Echo request",
+        [129] = "Echo reply",
+        [130] = "Group membership query",
+        [131] = "Group membership report",
+        [132] = "Group membership reduction",
+        [133] = "Router solicitation",
+        [134] = "Router advertisement",
+        [135] = "Neighbour solicitation",
+        [136] = "Neighbour advertisement",
+        [137] = "Redirect",
+    };
+
+    fprintf (stream, (type >= 1 && type <= 4) || (type >= 128 && type <= 137) ?
+            icmp6_types[type] : "Unknown");
 }
