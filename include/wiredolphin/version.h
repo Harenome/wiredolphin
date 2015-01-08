@@ -23,7 +23,7 @@ static const unsigned int WIREDOLPHIN_VERSION_MAJOR = 1;
 /**
  * \brief Wiredolphin minor version.
  */
-static const unsigned int WIREDOLPHIN_VERSION_MINOR = 1;
+static const unsigned int WIREDOLPHIN_VERSION_MINOR = 2;
 
 /**
  * \brief Wiredolphin patch version.
