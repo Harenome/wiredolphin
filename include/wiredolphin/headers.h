@@ -103,6 +103,10 @@ const u_char * header_ipv4_data (const u_char * bytes);
  */
 u_int8_t header_ipv4_protocol (const u_char * bytes);
 
+struct in_addr header_ipv4_src (const u_char * bytes);
+
+struct in_addr header_ipv4_dest (const u_char * bytes);
+
 ////////////////////////////////////////////////////////////////////////////////
 // ARP headers.
 ////////////////////////////////////////////////////////////////////////////////

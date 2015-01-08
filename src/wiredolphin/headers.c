@@ -520,14 +520,26 @@ void header_ipv4_print_concise (FILE * const stream,
 
 const u_char * header_ipv4_data (const u_char * bytes)
 {
-    const struct ip * header = (const struct ip *) bytes;
-    return bytes + (header->ip_hl * 4);
+    const struct iphdr * header = (const struct iphdr *) bytes;
+    return bytes + (header->ihl * 4);
 }
 
 u_int8_t header_ipv4_protocol (const u_char * bytes)
 {
-    const struct ip * header = (const struct ip *) bytes;
-    return header->ip_p;
+    const struct iphdr * header = (const struct iphdr *) bytes;
+    return header->protocol;
+}
+
+struct in_addr header_ipv4_src (const u_char * bytes)
+{
+    const struct iphdr * header = (const struct iphdr *) bytes;
+    return (struct in_addr) { header->saddr };
+}
+
+struct in_addr header_ipv4_dest (const u_char * bytes)
+{
+    const struct iphdr * header = (const struct iphdr *) bytes;
+    return (struct in_addr) { header->daddr };
 }
 
 ////////////////////////////////////////////////////////////////////////////////

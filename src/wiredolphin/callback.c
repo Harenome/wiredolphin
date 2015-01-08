@@ -60,19 +60,200 @@ void callback_raw_packet (u_char * user, const struct pcap_pkthdr * header,
 void callback_info_concise (u_char * user, const struct pcap_pkthdr * header,
     const u_char * bytes)
 {
-    /* Ignore user and header. */
     (void) user; (void) header;
 
-    header_ethernet_print_synthetic (stdout, bytes);
+    uint16_t packet_type = header_ethernet_packet_type (bytes);
+    bytes = header_ethernet_data (bytes);
+
+    struct in_addr src_addr;
+    struct in_addr dest_addr;
+    uint8_t next_protocol = 0;
+    switch (packet_type)
+    {
+        case ETHERTYPE_IP:
+            next_protocol = header_ipv4_protocol (bytes);
+            /* header_ipv4_print_complete (stdout, bytes); */
+            src_addr = header_ipv4_src (bytes);
+            dest_addr = header_ipv4_dest (bytes);
+            bytes = header_ipv4_data (bytes);
+            break;
+        case ETHERTYPE_ARP:
+            /* header_arp_print_complete (stdout, bytes); */
+            bytes = NULL;
+            break;
+        case ETHERTYPE_IPV6:
+            break;
+        default:
+            break;
+    }
+
+    char * protocol = "??";
+    u_int16_t source_port = 0;
+    u_int16_t dest_port = 0;
+
+    /* Print the protocol header, if relevant. */
+    if (bytes != NULL)
+    {
+        switch (next_protocol)
+        {
+            case 1: /* ICMP */
+                bytes = NULL;
+                protocol = "ICMP";
+                break;
+            case 6: /* TCP */
+                if (packet_type == ETHERTYPE_IP)
+                {
+                    source_port = header_tcp4_source_port (bytes);
+                    dest_port = header_tcp4_dest_port (bytes);
+                    bytes = header_tcp4_data (bytes);
+                }
+                protocol = "TCP";
+                break;
+            case 17: /* UDP */
+                if (packet_type == ETHERTYPE_IP)
+                {
+                    source_port = header_udp4_source_port (bytes);
+                    dest_port = header_udp4_dest_port (bytes);
+                    bytes = header_udp4_data (bytes);
+                }
+                protocol = "UDP";
+                break;
+            default:
+                break;
+        }
+        fprintf (stdout, "%s:%u -> %s:%u, %s",
+                inet_ntoa (src_addr), source_port,
+                inet_ntoa (dest_addr), dest_port,
+                protocol);
+    }
+
+    if (bytes != NULL)
+    {
+        #define __application(port,name) \
+            if (source_port == (port) || dest_port == (port)) \
+            { \
+                fprintf (stdout, ", %s", (name)); \
+            }
+
+        __application (20, "FTP data");
+        __application (21, "FTP control");
+        __application (25, "SMTP");
+        __application (67, "BOOTP");
+        __application (68, "BOOTP");
+        __application (80, "HTTP");
+        __application (110, "POP");
+        __application (143, "IMAP");
+        __application (443, "HTTPS");
+        __application (465, "Encrypted SMTP");
+        __application (993, "Encrypted IMAP");
+        __application (995, "Encrypted POP");
+
+        #undef __application
+    }
+
+    fprintf (stdout, "\n\n");
+
 }
 
 void callback_info_synthetic (u_char * user, const struct pcap_pkthdr * header,
     const u_char * bytes)
 {
-    /* Ignore user and header. */
     (void) user; (void) header;
 
+    fprintf (stdout,
+            "*****************************************************************"
+            "***************\n\n");
+
     header_ethernet_print_synthetic (stdout, bytes);
+
+    uint16_t packet_type = header_ethernet_packet_type (bytes);
+    bytes = header_ethernet_data (bytes);
+
+    struct in_addr src_addr;
+    struct in_addr dest_addr;
+    uint8_t next_protocol = 0;
+    switch (packet_type)
+    {
+        case ETHERTYPE_IP:
+            next_protocol = header_ipv4_protocol (bytes);
+            src_addr = header_ipv4_src (bytes);
+            dest_addr = header_ipv4_dest (bytes);
+            bytes = header_ipv4_data (bytes);
+            break;
+        case ETHERTYPE_ARP:
+            bytes = NULL;
+            break;
+        case ETHERTYPE_IPV6:
+            break;
+        default:
+            break;
+    }
+
+    char * protocol = "??";
+    u_int16_t source_port = 0;
+    u_int16_t dest_port = 0;
+
+    /* Print the protocol header, if relevant. */
+    if (bytes != NULL)
+    {
+        switch (next_protocol)
+        {
+            case 1: /* ICMP */
+                bytes = NULL;
+                protocol = "ICMP";
+                break;
+            case 6: /* TCP */
+                if (packet_type == ETHERTYPE_IP)
+                {
+                    source_port = header_tcp4_source_port (bytes);
+                    dest_port = header_tcp4_dest_port (bytes);
+                    bytes = header_tcp4_data (bytes);
+                }
+                protocol = "TCP";
+                break;
+            case 17: /* UDP */
+                if (packet_type == ETHERTYPE_IP)
+                {
+                    source_port = header_udp4_source_port (bytes);
+                    dest_port = header_udp4_dest_port (bytes);
+                    bytes = header_udp4_data (bytes);
+                }
+                protocol = "UDP";
+                break;
+            default:
+                break;
+        }
+        fprintf (stdout, "%s:%u -> %s:%u, %s\n",
+                inet_ntoa (src_addr), source_port,
+                inet_ntoa (dest_addr), dest_port,
+                protocol);
+    }
+
+    if (bytes != NULL)
+    {
+        #define __application(port,name) \
+            if (source_port == (port) || dest_port == (port)) \
+            { \
+                fprintf (stdout, "%s\n", (name)); \
+            }
+
+        __application (20, "FTP data");
+        __application (21, "FTP control");
+        __application (25, "SMTP");
+        __application (67, "BOOTP");
+        __application (68, "BOOTP");
+        __application (80, "HTTP");
+        __application (110, "POP");
+        __application (143, "IMAP");
+        __application (443, "HTTPS");
+        __application (465, "Encrypted SMTP");
+        __application (993, "Encrypted IMAP");
+        __application (995, "Encrypted POP");
+
+        #undef __application
+    }
+
+    fprintf (stdout, "\n");
 }
 
 void callback_info_complete (u_char * user, const struct pcap_pkthdr * header,
