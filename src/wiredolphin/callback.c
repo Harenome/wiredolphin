@@ -91,6 +91,10 @@ void callback_info_complete (u_char * user, const struct pcap_pkthdr * header,
             break;
     }
 
+    u_int16_t source_port = 0;
+    u_int16_t dest_port = 0;
+
+    /* Print the protocol header, if relevant. */
     if (bytes != NULL)
         switch (next_protocol)
         {
@@ -101,13 +105,21 @@ void callback_info_complete (u_char * user, const struct pcap_pkthdr * header,
                 break;
             case 6: /* TCP */
                 if (packet_type == ETHERTYPE_IP)
+                {
                     header_tcp4_print_complete (stdout, bytes);
-                bytes = header_tcp4_data (bytes);
+                    source_port = header_tcp4_source_port (bytes);
+                    dest_port = header_tcp4_dest_port (bytes);
+                    bytes = header_tcp4_data (bytes);
+                }
                 break;
             case 17: /* UDP */
                 if (packet_type == ETHERTYPE_IP)
+                {
                     header_udp4_print_complete (stdout, bytes);
-                bytes = header_udp4_data (bytes);
+                    source_port = header_udp4_source_port (bytes);
+                    dest_port = header_udp4_dest_port (bytes);
+                    bytes = header_udp4_data (bytes);
+                }
                 break;
             default:
                 break;

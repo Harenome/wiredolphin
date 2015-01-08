@@ -24,7 +24,7 @@
  * \param protocol_id Protocol ID.
  */
 static inline void __header_ethernet_print_protocol (FILE * stream,
-        uint16_t protocol_id);
+        u_int16_t protocol_id);
 
 /**
  * \brief Print a MAC address.
@@ -679,6 +679,17 @@ const u_char * header_tcp4_data (const u_char * bytes)
     return bytes + (header->th_off * 4);
 }
 
+u_int16_t header_tcp4_source_port (const u_char * bytes)
+{
+    const struct tcphdr * header = (const struct tcphdr *) bytes;
+    return header->th_sport;
+}
+
+u_int16_t header_tcp4_dest_port (const u_char * bytes)
+{
+    const struct tcphdr * header = (const struct tcphdr *) bytes;
+    return header->th_dport;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // UDP headers.
@@ -712,13 +723,24 @@ const u_char * header_udp4_data (const u_char * bytes)
     return bytes + sizeof (struct udphdr);
 }
 
+u_int16_t header_udp4_source_port (const u_char * bytes)
+{
+    const struct udphdr * header = (const struct udphdr *) bytes;
+    return header->uh_sport;
+}
+
+u_int16_t header_udp4_dest_port (const u_char * bytes)
+{
+    const struct udphdr * header = (const struct udphdr *) bytes;
+    return header->uh_dport;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Misc.
 ////////////////////////////////////////////////////////////////////////////////
 
 void __header_ethernet_print_protocol (FILE * const stream,
-        uint16_t protocol_id)
+        u_int16_t protocol_id)
 {
     const char * protocol_string = "";
     switch (protocol_id)

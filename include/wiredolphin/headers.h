@@ -185,6 +185,20 @@ void header_tcp4_print_concise (FILE * stream, const u_char * bytes);
  */
 const u_char * header_tcp4_data (const u_char * bytes);
 
+/**
+ * \brief Get the source port out of a TCP header.
+ * \param bytes The TCP header.
+ * \return Source port.
+ */
+u_int16_t header_tcp4_source_port (const u_char * bytes);
+
+/**
+ * \brief Get the destination port out of a TCP header.
+ * \param bytes The TCP header.
+ * \return Destination port.
+ */
+u_int16_t header_tcp4_dest_port (const u_char * bytes);
+
 ////////////////////////////////////////////////////////////////////////////////
 // UDP headers.
 ////////////////////////////////////////////////////////////////////////////////
@@ -216,5 +230,19 @@ void header_udp4_print_concise (FILE * stream, const u_char * bytes);
  * \return The data.
  */
 const u_char * header_udp4_data (const u_char * bytes);
+
+/**
+ * \brief Get the source port out of a UDP header.
+ * \param bytes The UDP header.
+ * \return Source port.
+ */
+u_int16_t header_udp4_source_port (const u_char * bytes);
+
+/**
+ * \brief Get the destination port out of a UDP header.
+ * \param bytes The UDP header.
+ * \return Destination port.
+ */
+u_int16_t header_udp4_dest_port (const u_char * bytes);
 
 #endif /* __HEADERS_H__ */
