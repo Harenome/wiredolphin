@@ -14,6 +14,8 @@
 
 #include "wiredolphin/capture.h"
 
+static pcap_handler wiredolphin_callback = callback_info_complete;
+
 bool check_interface (const char * interface)
 {
     char error_buffer[PCAP_ERRBUF_SIZE];
@@ -45,11 +47,41 @@ void monitor_interface (const char * interface, const char * filter)
         if (capture != NULL)
         {
             pcap_compile (capture, & compiled_filter, filter, 0, 0);
-            pcap_loop (capture, -1, callback_info_complete, NULL);
+            pcap_setfilter (capture, & compiled_filter);
+            pcap_loop (capture, -1, wiredolphin_callback, NULL);
         }
         else
             fprintf (stderr, "Error: Could not open capture.\n");
     }
     else
         fprintf (stderr, "Error: interface %s not found.\n", interface);
+}
+
+void monitor_file (const char * file, const char * filter)
+{
+    char error_buffer[PCAP_ERRBUF_SIZE];
+    struct bpf_program compiled_filter;
+
+    pcap_t * capture = pcap_open_offline (file, error_buffer);
+    if (capture != NULL)
+    {
+        pcap_compile (capture, & compiled_filter, filter, 0, 0);
+        pcap_setfilter (capture, & compiled_filter);
+        pcap_loop (capture, -1, wiredolphin_callback, NULL);
+    }
+    else
+        fprintf (stderr, "Error: Could not open capture.\n");
+}
+
+void set_callback (unsigned int id)
+{
+    static pcap_handler callbacks[] =
+    {
+        [0] = callback_raw_packet,
+        [1] = callback_info_concise,
+        [2] = callback_info_synthetic,
+        [3] = callback_info_complete,
+    };
+
+    wiredolphin_callback = callbacks[id < 4 ? id : 3];
 }

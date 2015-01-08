@@ -39,4 +39,23 @@ bool check_interface (const char * interface);
  */
 void monitor_interface (const char * interface, const char * filter);
 
+/**
+ * \brief Monitor an offline capture file using a filter.
+ * \param file Offline capture file.
+ * \param filter Filter.
+ */
+void monitor_file (const char * file, const char * filter);
+
+/**
+ * \brief Set the callback.
+ * \param id
+ *
+ * Valid values for id:
+ * 1 -> Concise callback
+ * 2 -> Synthetic callback
+ * 3 -> Complete callback
+ * 4 -> Raw callback
+ */
+void set_callback (unsigned int id);
+
 #endif /* __CAPTURE_H__ */
