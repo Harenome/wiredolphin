@@ -59,6 +59,28 @@ static inline void __header_arp_print_opcode (FILE * stream,
         unsigned short int code);
 
 /**
+ * \brief Print an ICMP type.
+ * \param stream Output stream.
+ * \param type ICMP type.
+ */
+static inline void __header_icmp4_print_type (FILE * stream, u_int8_t type);
+
+/**
+ * \brief Print an ICMP sub code.
+ * \param stream Output stream.
+ * \param code ICMP sub code.
+ */
+static inline void __header_icmp4_print_code (FILE * stream, u_int8_t type,
+        u_int8_t code);
+
+/**
+ * \brief Print an ICMP data.
+ * \param stream Output stream.
+ * \param header ICMP header
+ */
+static inline void __header_icmp4_print_data (FILE * stream,
+        const struct icmphdr * header);
+/**
  * \brief List of IP protocols.
  *
  * According to Wikipedia(!):
@@ -505,6 +527,8 @@ void header_arp_print_complete (FILE * const stream, const u_char * bytes)
     unsigned char hln = header->ar_hln;
     unsigned char pln = header->ar_pln;
 
+    fprintf (stream, "ARP header\n==========\n");
+
     /* Hardware type. */
     fprintf (stream, "%-32s\t%u\n", "Hardware type:", header->ar_hrd);
 
@@ -514,8 +538,8 @@ void header_arp_print_complete (FILE * const stream, const u_char * bytes)
     fprintf (stream, "\n");
 
     /* Lengths. */
-    fprintf (stream, "%-32s\t%u", "Hardware length:", hln);
-    fprintf (stream, "%-32s\t%u", "Protocol length:", pln);
+    fprintf (stream, "%-32s\t%u\n", "Hardware length:", hln);
+    fprintf (stream, "%-32s\t%u\n", "Protocol length:", pln);
 
     /* Operation code. */
     fprintf (stream, "%-32s\t", "Operation code:");
@@ -556,6 +580,47 @@ void header_arp_print_synthetic (FILE * const stream, const u_char * bytes)
 }
 
 void header_arp_print_concise (FILE * const stream, const u_char * bytes)
+{
+    (void) stream; (void) bytes;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ICMP headers.
+////////////////////////////////////////////////////////////////////////////////
+
+void header_icmp4_print_complete (FILE * stream, const u_char * bytes)
+{
+    const struct icmphdr * header = (const struct icmphdr *) bytes;
+    u_int8_t type = header->type;
+    u_int8_t code = header->code;
+
+    fprintf (stream, "ICMP header\n===========\n");
+
+    /* Type. */
+    fprintf (stream, "%-5s\t", "Type:");
+    __header_icmp4_print_type (stream, type);
+    fprintf (stream, "\n");
+
+    /* Subcode. */
+    if (type == ICMP_DEST_UNREACH || type == ICMP_REDIRECT
+            || type == ICMP_TIME_EXCEEDED || type == ICMP_PARAMETERPROB)
+    {
+        fprintf (stream, "%-5s\t", "Code:");
+        __header_icmp4_print_code (stream, type, code);
+        fprintf (stream, "\n");
+    }
+
+    __header_icmp4_print_data (stream, header);
+
+    fprintf (stream, "\n");
+}
+
+void header_icmp4_print_synthetic (FILE * stream, const u_char * bytes)
+{
+    (void) stream; (void) bytes;
+}
+
+void header_icmp4_print_concise (FILE * stream, const u_char * bytes)
 {
     (void) stream; (void) bytes;
 }
@@ -650,4 +715,95 @@ void __header_arp_print_opcode (FILE * const stream,
             protocol_string = "Unknown"; break;
     }
     fprintf (stream, "%s", protocol_string);
+}
+
+void __header_icmp4_print_type (FILE * const stream, u_int8_t type)
+{
+    static const char * icmp_types[] =
+    {
+        [ICMP_ECHOREPLY]      = "Echo reply",
+        [ICMP_DEST_UNREACH]   = "Destination unreachable",
+        [ICMP_SOURCE_QUENCH]  = "Source quench",
+        [ICMP_REDIRECT]       = "Redirect",
+        [ICMP_ECHO]           = "Echo request",
+        [ICMP_TIME_EXCEEDED]  = "Time exceeded",
+        [ICMP_PARAMETERPROB]  = "Parameter problem",
+        [ICMP_TIMESTAMP]      = "Timestamp request",
+        [ICMP_TIMESTAMPREPLY] = "Timestamp reply",
+        [ICMP_INFO_REQUEST]   = "Information request",
+        [ICMP_INFO_REPLY]     = "Information reply",
+        [ICMP_ADDRESS]        = "Address mask request",
+        [ICMP_ADDRESSREPLY]   = "Address mask reply",
+    };
+
+    fprintf (stream, "%s", type <= NR_ICMP_TYPES ? icmp_types[type] : "Unknown");
+}
+
+void __header_icmp4_print_code (FILE * const stream, u_int8_t type,
+        u_int8_t code)
+{
+    static const char * unreach_codes[] =
+    {
+        [ICMP_NET_UNREACH]    = "Network unreachable",
+        [ICMP_HOST_UNREACH]   = "Host unreachable",
+        [ICMP_PROT_UNREACH]   = "Protocol unreachable",
+        [ICMP_PORT_UNREACH]   = "Port unreachable",
+        [ICMP_FRAG_NEEDED]    = "Fragmentation Needed/DF set",
+        [ICMP_SR_FAILED]      = "Source Route failed",
+        [ICMP_NET_UNKNOWN]    = "Destination network unknown",
+        [ICMP_HOST_UNKNOWN]   = "Destination host unknown",
+        [ICMP_HOST_ISOLATED]  = "Source host isolated",
+        [ICMP_NET_ANO]        = "Network administratively prohibited",
+        [ICMP_HOST_ANO]       = "Host administratively prohibited",
+        [ICMP_NET_UNR_TOS]    = "Network unreachable for TOS",
+        [ICMP_HOST_UNR_TOS]   = "Host unreachable for TOS",
+        [ICMP_PKT_FILTERED]   = "Packet filtered",
+        [ICMP_PREC_VIOLATION] = "Precedence violation",
+        [ICMP_PREC_CUTOFF]    = "Precedence cut off",
+    };
+    static const char * redirect_codes[] =
+    {
+        [ICMP_REDIR_NET]     = "Redirect datagram for the network",
+        [ICMP_REDIR_HOST]    = "Redirect datagram for the host",
+        [ICMP_REDIR_NETTOS]  = "Redirect datagram for the TOS and the network",
+        [ICMP_REDIR_HOSTTOS] = "Redirect datagram for the TOS and the host",
+    };
+    static const char * time_exceeded_codes[] =
+    {
+        [ICMP_EXC_TTL]      = "TTL count exceeded",
+        [ICMP_EXC_FRAGTIME] = "Fragment reassembly time exceeded",
+    };
+    static const char * parameterprob_codes[] =
+    {
+        [0] = "Pointer indicates the error",
+        [1] = "Missing a required option",
+        [2] = "Bad length",
+    };
+
+    const char * string = "";
+    switch (type)
+    {
+        case ICMP_DEST_UNREACH:
+            string = code <= NR_ICMP_UNREACH ? unreach_codes[code] : ""; break;
+        case ICMP_REDIRECT:
+            string = code <= 3 ? redirect_codes[code] : ""; break;
+        case ICMP_TIME_EXCEEDED:
+            string = code <= 1 ? time_exceeded_codes[code] : ""; break;
+        case ICMP_PARAMETERPROB:
+            string = code <= 2 ? parameterprob_codes[code] : ""; break;
+        default:
+            break;
+    }
+    fprintf (stream, "%s", string);
+}
+
+void __header_icmp4_print_data (FILE * const stream,
+        const struct icmphdr * header)
+{
+    if ((header->type == ICMP_ECHOREPLY && header->code == 0)
+            || (header->type == ICMP_ECHOREPLY && header->code == 0))
+    {
+        fprintf (stream, "%-5s\t%u\n%-5s\t%u", "ID:", header->un.echo.id,
+                "Seq:", header->un.echo.sequence);
+    }
 }

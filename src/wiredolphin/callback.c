@@ -59,30 +59,51 @@ void callback_info_complete (u_char * user, const struct pcap_pkthdr * header,
     /* Ignore user. */
     (void) user;
 
+    fprintf (stdout,
+            "*****************************************************************"
+            "***************\n\n");
+
     /* Print the raw packet. */
     __raw_packet_print (stdout, bytes, header->caplen);
 
     /* Print the ethernet header. */
     header_ethernet_print_complete (stdout, bytes);
 
+    uint8_t next_protocol = 0;
     /* Print the underlying packet. */
     uint16_t packet_type = header_ethernet_packet_type (bytes);
     bytes = header_ethernet_data (bytes);
-
     switch (packet_type)
     {
         case ETHERTYPE_IP:
+            next_protocol = header_ipv4_protocol (bytes);
             header_ipv4_print_complete (stdout, bytes);
             bytes = header_ipv4_data (bytes);
             break;
         case ETHERTYPE_ARP:
             header_arp_print_complete (stdout, bytes);
+            bytes = NULL;
             break;
         case ETHERTYPE_IPV6:
             break;
         default:
             break;
     }
+
+    if (bytes != NULL)
+        switch (next_protocol)
+        {
+            case 1: /* ICMP */
+                if (packet_type == ETHERTYPE_IP)
+                    header_icmp4_print_complete (stdout, bytes);
+                break;
+            case 6: /* TCP */
+                break;
+            case 17: /* UDP */
+                break;
+            default:
+                break;
+        }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
