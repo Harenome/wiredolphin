@@ -43,6 +43,15 @@ static inline void __raw_packet_print (FILE * stream,
 static inline void __print_bytes (FILE * stream, const u_char * bytes,
         const u_char * limit);
 
+/**
+ * \brief Print the first line of the bytes.
+ * \param stream Output stream.
+ * \param bytes First byte.
+ * \param limit Byte following the last byte.
+ */
+static inline void __print_bytes_start (FILE * stream, const u_char * bytes,
+        const u_char * limit);
+
 ////////////////////////////////////////////////////////////////////////////////
 // Callbacks.
 ////////////////////////////////////////////////////////////////////////////////
@@ -60,7 +69,11 @@ void callback_raw_packet (u_char * user, const struct pcap_pkthdr * header,
 void callback_info_concise (u_char * user, const struct pcap_pkthdr * header,
     const u_char * bytes)
 {
-    (void) user; (void) header;
+    (void) user;
+
+    const u_char * limit = bytes + header->caplen;
+
+    header_ethernet_print_synthetic (stdout, bytes);
 
     uint16_t packet_type = header_ethernet_packet_type (bytes);
     bytes = header_ethernet_data (bytes);
@@ -121,7 +134,7 @@ void callback_info_concise (u_char * user, const struct pcap_pkthdr * header,
             default:
                 break;
         }
-        fprintf (stdout, "%s:%u -> %s:%u, %s",
+        fprintf (stdout, "; %s:%u -> %s:%u, %s",
                 inet_ntoa (src_addr), source_port,
                 inet_ntoa (dest_addr), dest_port,
                 protocol);
@@ -132,7 +145,8 @@ void callback_info_concise (u_char * user, const struct pcap_pkthdr * header,
         #define __application(port,name) \
             if (source_port == (port) || dest_port == (port)) \
             { \
-                fprintf (stdout, ", %s", (name)); \
+                fprintf (stdout, "; %s: ", (name)); \
+                __print_bytes_start (stdout, bytes, limit); \
             }
 
         __application (20, "FTP data");
@@ -158,7 +172,9 @@ void callback_info_concise (u_char * user, const struct pcap_pkthdr * header,
 void callback_info_synthetic (u_char * user, const struct pcap_pkthdr * header,
     const u_char * bytes)
 {
-    (void) user; (void) header;
+    (void) user;
+
+    const u_char * limit = bytes + header->caplen;
 
     fprintf (stdout,
             "*****************************************************************"
@@ -234,7 +250,9 @@ void callback_info_synthetic (u_char * user, const struct pcap_pkthdr * header,
         #define __application(port,name) \
             if (source_port == (port) || dest_port == (port)) \
             { \
-                fprintf (stdout, "%s\n", (name)); \
+                fprintf (stdout, "%s: ", (name)); \
+                __print_bytes_start (stdout, bytes, limit); \
+                fprintf (stdout, "\n"); \
             }
 
         __application (20, "FTP data");
@@ -273,6 +291,7 @@ void callback_info_complete (u_char * user, const struct pcap_pkthdr * header,
 
     /* Print the ethernet header. */
     header_ethernet_print_complete (stdout, bytes);
+    fprintf (stdout, "\n");
 
     uint8_t next_protocol = 0;
 
@@ -404,5 +423,32 @@ void __print_bytes (FILE * const stream, const u_char * bytes,
         const u_char * const limit)
 {
     for ( ; bytes < limit; ++bytes)
-        fprintf (stream, "%c", * bytes);
+    {
+        u_char current_byte = bytes[0];
+        if (current_byte == 0x0d && bytes[1] == 0x0a)
+        {
+            fprintf (stream, "\n");
+            ++bytes;
+        }
+        else
+            fprintf (stream, "%c",
+                    (* bytes) > 31 && (* bytes) < 127 ? * bytes : '.');
+    }
+}
+
+void __print_bytes_start (FILE * const stream, const u_char * bytes,
+        const u_char * const limit)
+{
+    for ( ; bytes < limit; ++bytes)
+    {
+        u_char current_byte = bytes[0];
+        if (current_byte == 0x0d && bytes[1] == 0x0a)
+        {
+            fprintf (stream, "\n");
+            break;
+        }
+        else
+            fprintf (stream, "%c",
+                    (* bytes) > 31 && (* bytes) < 127 ? * bytes : '.');
+    }
 }

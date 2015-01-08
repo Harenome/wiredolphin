@@ -103,7 +103,6 @@ typedef enum bootp_option
     BOOTP_DHCP_BROADCAST_ADDR = 28,
     BOOTP_DHCP_MESSAGE = 53,
     BOOTP_DHCP_PAR_REQ_LIST = 55,
-    BOOTP_DHCP_CLIENT_ID = 61,
 } bootp_option;
 
 /**

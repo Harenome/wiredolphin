@@ -58,7 +58,9 @@ void bootp_print (FILE * const stream, const bootp_header * const header)
     const u_int32_t * cookie = (const u_int32_t *) header->vendor_specific;
     if (ntohl (* cookie) == BOOTP_MAGIC_COOKIE)
     {
-        fprintf (stream, "DHCP cookie found: 0x%x\n", ntohl (* cookie));
+        fprintf (stream, "\nDHCP header\n===========\n");
+        fprintf (stream, "%-24s\t0x%x\n", "DHCP cookie found:",
+                ntohl (* cookie));
 
         const u_int8_t * limit = (const u_int8_t *) header;
         limit += sizeof (bootp_header);
@@ -94,40 +96,50 @@ bootp_tlv bootp_extract_tlv (const u_int8_t * bytes)
 void bootp_option_print (FILE * stream, const bootp_tlv * option)
 {
     char char_buffer[option->length + 1];
-    struct in_addr addr_buffer;
+    const struct in_addr * addr;
 
-    fprintf (stream, "DHCP option %u", option->type);
     switch (option->type)
     {
         case BOOTP_DHCP_SUBNET_MASK:
-            strncpy ((char *) & addr_buffer, (const char *) option->value, 4);
-            fprintf (stream, ": %s", inet_ntoa (addr_buffer));
+            addr = (const struct in_addr *) option->value;
+            fprintf (stream, "%-24s\t%s", "Subnet mask:", inet_ntoa (* addr));
             break;
         case BOOTP_DHCP_ROUTER:
-            break;
         case BOOTP_DHCP_DNS:
+            fprintf (stream, "%-24s\n",
+                    option->type == BOOTP_DHCP_ROUTER ? "Routers:" : "Dns:");
+            addr = (const struct in_addr *) option->value;
+            for (u_int8_t i = 0; i < option->length / 4; ++i)
+                fprintf (stream, "\t%s%c",
+                        inet_ntoa (addr[i]),
+                        (i + 1) < (option->length / 4) ? '\n' : '\0');
             break;
         case BOOTP_DHCP_HOSTNAME:
         case BOOTP_DHCP_DOMAINNAME:
             strncpy (char_buffer, (const char *) option->value, option->length);
             char_buffer[option->length] = '\0';
-            fprintf (stream, ": %s: %s",
-                option->type == BOOTP_DHCP_HOSTNAME ? "hostname" : "domainname",
+            fprintf (stream, "%-24s\t%s",
+                option->type == BOOTP_DHCP_HOSTNAME ? "Hostname:" : "Domain name:",
                 char_buffer);
             break;
         case BOOTP_DHCP_BROADCAST_ADDR:
+            addr = (const struct in_addr *) option->value;
+            fprintf (stream, "%-24s\t%s", "Broadcast address:", inet_ntoa (* addr));
             break;
         case BOOTP_DHCP_MESSAGE:
-            fprintf (stream, ": %s", dhcp_message_type_string (option->value[0]));
+            fprintf (stream, "%-24s\t%s", "DHCP message type:",
+                    dhcp_message_type_string (option->value[0]));
             break;
         case BOOTP_DHCP_PAR_REQ_LIST:
-            fprintf (stream, ":");
+            fprintf (stream, "Parameter request list:\n\t");
             for (u_int8_t i = 0; i < option->length; ++i)
-                fprintf (stream, " %u", option->value[i]);
+                fprintf (stream, "%u ", option->value[i]);
             break;
-        case BOOTP_DHCP_CLIENT_ID:
+        case 255:
+            fprintf (stream, "DHCP options end");
             break;
         default:
+            fprintf (stream, "DHCP option %.3u", option->type);
             break;
     }
 }

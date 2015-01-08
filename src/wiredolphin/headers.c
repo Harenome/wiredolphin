@@ -433,7 +433,6 @@ void header_ethernet_print_synthetic (FILE * const stream,
     __header_ethernet_print_mac (stream, header->ether_dhost);
     fprintf (stream, ", ");
     __header_ethernet_print_protocol (stream, ntohs (header->ether_type));
-    fprintf (stream, "\n");
 }
 
 uint16_t header_ethernet_packet_type (const u_char * const bytes)
@@ -469,7 +468,7 @@ void header_ipv4_print_complete (FILE * const stream,
     fprintf (stream, "%-16s\t%u\n", "ECN:", IPTOS_ECN (header->tos));
 
     /* Total length. */
-    fprintf (stream, "%-16s\t%u\n", "Total length:", header->tot_len);
+    fprintf (stream, "%-16s\t%u\n", "Total length:", ntohs (header->tot_len));
 
     /* Identification. */
     fprintf (stream, "%-16s\t%u\n", "Identification:", header->id);
@@ -672,7 +671,7 @@ void header_tcp4_print_complete (FILE * stream, const u_char * bytes)
     fprintf (stream, "\n");
 
     fprintf (stream, "%-24s\t%u\n", "Window:", header->th_win);
-    fprintf (stream, "%-24s\t%u\n", "Urgent pointer:", header->th_win);
+    fprintf (stream, "%-24s\t%u\n", "Urgent pointer:", header->th_urp);
 
     fprintf (stream, "\n");
 }
@@ -717,8 +716,8 @@ void header_udp4_print_complete (FILE * stream, const u_char * bytes)
 
     fprintf (stream, "%-20s\t%u\n", "Source port:", ntohs (header->uh_sport));
     fprintf (stream, "%-20s\t%u\n", "Destination port:",
-            ntohs (header->uh_sport));
-    fprintf (stream, "%-20s\t%u\n", "Length:", header->uh_ulen);
+            ntohs (header->uh_dport));
+    fprintf (stream, "%-20s\t%u\n", "Length:", ntohs (header->uh_ulen));
 
     fprintf (stream, "\n");
 }
