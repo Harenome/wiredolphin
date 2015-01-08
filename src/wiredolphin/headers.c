@@ -446,39 +446,44 @@ const u_char * header_ethernet_data (const u_char * bytes)
 void header_ipv4_print_complete (FILE * const stream,
         const u_char * bytes)
 {
-    const struct ip * header = (const struct ip *) bytes;
+    const struct iphdr * header = (const struct iphdr *) bytes;
 
     fprintf (stream, "IPv4 header\n===========\n");
 
     /* Version. */
-    fprintf (stream, "%-16s\t%u\n", "Version:", header->ip_v);
+    fprintf (stream, "%-16s\t%u\n", "Version:", header->version);
 
     /* Header length. */
-    fprintf (stream, "%-16s\t%u\n", "IHL:", header->ip_hl);
+    fprintf (stream, "%-16s\t%u\n", "IHL:", header->ihl);
 
     /* DSCP and ECN. */
-    fprintf (stream, "%-16s\t%u\n", "DSCP:", IPTOS_DSCP (header->ip_tos));
-    fprintf (stream, "%-16s\t%u\n", "ECN:", IPTOS_ECN (header->ip_tos));
+    fprintf (stream, "%-16s\t%u\n", "DSCP:", IPTOS_DSCP (header->tos));
+    fprintf (stream, "%-16s\t%u\n", "ECN:", IPTOS_ECN (header->tos));
+
+    /* Total length. */
+    fprintf (stream, "%-16s\t%u\n", "Total length:", header->tot_len);
 
     /* Identification. */
-    fprintf (stream, "%-16s\t%u\n", "Identification:", header->ip_id);
+    fprintf (stream, "%-16s\t%u\n", "Identification:", header->id);
 
     /* Flags. */
     fprintf (stream, "%-16s\t", "Flags:");
-    __header_ipv4_print_flags (stream, header->ip_off);
+    __header_ipv4_print_flags (stream, header->frag_off);
     fprintf (stream, "\n");
 
     /* TTL. */
-    fprintf (stream, "%-16s\t%u\n", "TTL:", header->ip_ttl);
+    fprintf (stream, "%-16s\t%u\n", "TTL:", header->ttl);
 
     /* Protocol. */
     fprintf (stream, "%-16s\t", "Protocol:");
-    __header_ip_print_protocol (stream, header->ip_p);
+    __header_ip_print_protocol (stream, header->protocol);
     fprintf (stream, "\n");
 
     /* Source and destination addresses. */
-    fprintf (stream, "%-16s\t%s\n", "Source:", inet_ntoa (header->ip_src));
-    fprintf (stream, "%-16s\t%s\n", "Destination:", inet_ntoa (header->ip_dst));
+    fprintf (stream, "%-16s\t%s\n", "Source:",
+            inet_ntoa ((struct in_addr) { header->saddr }));
+    fprintf (stream, "%-16s\t%s\n", "Destination:",
+            inet_ntoa ((struct in_addr) { header->daddr }));
 
     fprintf (stream, "\n");
 }
