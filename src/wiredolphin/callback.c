@@ -98,6 +98,42 @@ void callback_info_concise (u_char * user, const struct pcap_pkthdr * header,
             break;
     }
 
+    /* char * protocol = "??"; */
+    /* u_int16_t source_port = 0; */
+    /* u_int16_t dest_port = 0; */
+
+    /* /1* Print the protocol header, if relevant. *1/ */
+    /* if (bytes != NULL) */
+    /* { */
+    /*     switch (next_protocol) */
+    /*     { */
+    /*         case 1: /1* ICMP *1/ */
+    /*             bytes = NULL; */
+    /*             protocol = "ICMP"; */
+    /*             break; */
+    /*         case 6: /1* TCP *1/ */
+    /*             source_port = header_tcp4_source_port (bytes); */
+    /*             dest_port = header_tcp4_dest_port (bytes); */
+    /*             bytes = header_tcp4_data (bytes); */
+    /*             protocol = "TCP"; */
+    /*             break; */
+    /*         case 17: /1* UDP *1/ */
+    /*             source_port = header_udp4_source_port (bytes); */
+    /*             dest_port = header_udp4_dest_port (bytes); */
+    /*             bytes = header_udp4_data (bytes); */
+    /*             protocol = "UDP"; */
+    /*             break; */
+    /*         default: */
+    /*             break; */
+    /*     } */
+
+    /*     fprintf (stdout, "; %s:%u -> %s:%u, %s", */
+    /*             inet_ntoa (src_addr), source_port, */
+    /*             inet_ntoa (dest_addr), dest_port, */
+    /*             protocol); */
+    /* } */
+    char buffer_1[INET6_ADDRSTRLEN];
+    char buffer_2[INET6_ADDRSTRLEN];
     char * protocol = "??";
     u_int16_t source_port = 0;
     u_int16_t dest_port = 0;
@@ -112,29 +148,38 @@ void callback_info_concise (u_char * user, const struct pcap_pkthdr * header,
                 protocol = "ICMP";
                 break;
             case 6: /* TCP */
-                if (packet_type == ETHERTYPE_IP)
-                {
-                    source_port = header_tcp4_source_port (bytes);
-                    dest_port = header_tcp4_dest_port (bytes);
-                    bytes = header_tcp4_data (bytes);
-                }
+                source_port = header_tcp4_source_port (bytes);
+                dest_port = header_tcp4_dest_port (bytes);
+                bytes = header_tcp4_data (bytes);
                 protocol = "TCP";
                 break;
             case 17: /* UDP */
-                if (packet_type == ETHERTYPE_IP)
-                {
-                    source_port = header_udp4_source_port (bytes);
-                    dest_port = header_udp4_dest_port (bytes);
-                    bytes = header_udp4_data (bytes);
-                }
+                source_port = header_udp4_source_port (bytes);
+                dest_port = header_udp4_dest_port (bytes);
+                bytes = header_udp4_data (bytes);
                 protocol = "UDP";
+                break;
+            case 58:
+                bytes = NULL;
+                protocol = "ICMPv6";
                 break;
             default:
                 break;
         }
+
+        if (packet_type == ETHERTYPE_IP)
+        {
+            inet_ntop (AF_INET, & src_addr, buffer_1, INET_ADDRSTRLEN);
+            inet_ntop (AF_INET, & dest_addr, buffer_2, INET_ADDRSTRLEN);
+        }
+        else if (packet_type == ETHERTYPE_IPV6)
+        {
+            inet_ntop (AF_INET6, & src_addr, buffer_1, INET6_ADDRSTRLEN);
+            inet_ntop (AF_INET6, & dest_addr, buffer_2, INET6_ADDRSTRLEN);
+        }
         fprintf (stdout, "; %s:%u -> %s:%u, %s",
-                inet_ntoa (src_addr), source_port,
-                inet_ntoa (dest_addr), dest_port,
+                buffer_1, source_port,
+                buffer_2, dest_port,
                 protocol);
     }
 
@@ -179,30 +224,38 @@ void callback_info_synthetic (u_char * user, const struct pcap_pkthdr * header,
             "***************\n\n");
 
     header_ethernet_print_synthetic (stdout, bytes);
+    fprintf (stdout, "\n");
 
     uint16_t packet_type = header_ethernet_packet_type (bytes);
     bytes = header_ethernet_data (bytes);
 
-    struct in_addr src_addr;
-    struct in_addr dest_addr;
+    struct in6_addr src_addr;
+    struct in6_addr dest_addr;
+    struct in_addr * addr_cheat;
     uint8_t next_protocol = 0;
     switch (packet_type)
     {
         case ETHERTYPE_IP:
             next_protocol = header_ipv4_protocol (bytes);
-            src_addr = header_ipv4_src (bytes);
-            dest_addr = header_ipv4_dest (bytes);
+            addr_cheat = (struct in_addr *) & src_addr;
+            * addr_cheat = header_ipv4_src (bytes);
+            addr_cheat = (struct in_addr *) & dest_addr;
+            * addr_cheat = header_ipv4_dest (bytes);
             bytes = header_ipv4_data (bytes);
             break;
         case ETHERTYPE_ARP:
             bytes = NULL;
             break;
         case ETHERTYPE_IPV6:
+            next_protocol = header_ipv6_protocol (bytes);
+            bytes = header_ipv6_data (bytes);
             break;
         default:
             break;
     }
 
+    char buffer_1[INET6_ADDRSTRLEN];
+    char buffer_2[INET6_ADDRSTRLEN];
     char * protocol = "??";
     u_int16_t source_port = 0;
     u_int16_t dest_port = 0;
@@ -217,29 +270,38 @@ void callback_info_synthetic (u_char * user, const struct pcap_pkthdr * header,
                 protocol = "ICMP";
                 break;
             case 6: /* TCP */
-                if (packet_type == ETHERTYPE_IP)
-                {
-                    source_port = header_tcp4_source_port (bytes);
-                    dest_port = header_tcp4_dest_port (bytes);
-                    bytes = header_tcp4_data (bytes);
-                }
+                source_port = header_tcp4_source_port (bytes);
+                dest_port = header_tcp4_dest_port (bytes);
+                bytes = header_tcp4_data (bytes);
                 protocol = "TCP";
                 break;
             case 17: /* UDP */
-                if (packet_type == ETHERTYPE_IP)
-                {
-                    source_port = header_udp4_source_port (bytes);
-                    dest_port = header_udp4_dest_port (bytes);
-                    bytes = header_udp4_data (bytes);
-                }
+                source_port = header_udp4_source_port (bytes);
+                dest_port = header_udp4_dest_port (bytes);
+                bytes = header_udp4_data (bytes);
                 protocol = "UDP";
+                break;
+            case 58:
+                bytes = NULL;
+                protocol = "ICMPv6";
                 break;
             default:
                 break;
         }
+
+        if (packet_type == ETHERTYPE_IP)
+        {
+            inet_ntop (AF_INET, & src_addr, buffer_1, INET_ADDRSTRLEN);
+            inet_ntop (AF_INET, & dest_addr, buffer_2, INET_ADDRSTRLEN);
+        }
+        else if (packet_type == ETHERTYPE_IPV6)
+        {
+            inet_ntop (AF_INET6, & src_addr, buffer_1, INET6_ADDRSTRLEN);
+            inet_ntop (AF_INET6, & dest_addr, buffer_2, INET6_ADDRSTRLEN);
+        }
         fprintf (stdout, "%s:%u -> %s:%u, %s\n",
-                inet_ntoa (src_addr), source_port,
-                inet_ntoa (dest_addr), dest_port,
+                buffer_1, source_port,
+                buffer_2, dest_port,
                 protocol);
     }
 
