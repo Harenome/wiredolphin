@@ -659,8 +659,9 @@ void header_tcp4_print_complete (FILE * stream, const u_char * bytes)
     fprintf (stream, "\n");
 
     fprintf (stream, "%-24s\t%u\n", "Window:", header->th_win);
-    fprintf (stream, "%-24s\t%u\n", "Urgen pointer:", header->th_win);
+    fprintf (stream, "%-24s\t%u\n", "Urgent pointer:", header->th_win);
 
+    fprintf (stream, "\n");
 }
 
 void header_tcp4_print_synthetic (FILE * stream, const u_char * bytes)
