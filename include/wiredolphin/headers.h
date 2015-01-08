@@ -24,6 +24,8 @@
 #include <arpa/inet.h>
 #include <net/ethernet.h>
 #include <netinet/ip.h>
+#include <netinet/ether.h>
+#include <net/if_arp.h>
 
 #include <pcap/pcap.h>
 
@@ -97,5 +99,30 @@ const u_char * header_ipv4_data (const u_char * bytes);
  * \return The protocol.
  */
 u_int8_t header_ipv4_protocol (const u_char * bytes);
+
+////////////////////////////////////////////////////////////////////////////////
+// ARP headers.
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * \brief Print complete information on an ARP header.
+ * \param stream Output stream.
+ * \param bytes The ARP header.
+ */
+void header_arp_print_complete (FILE * stream, const u_char * bytes);
+
+/**
+ * \brief Print complete information on an ARP header.
+ * \param stream Output stream.
+ * \param bytes The ARP header.
+ */
+void header_arp_print_synthetic (FILE * stream, const u_char * bytes);
+
+/**
+ * \brief Print complete information on an ARP header.
+ * \param stream Output stream.
+ * \param bytes The ARP header.
+ */
+void header_arp_print_concise (FILE * stream, const u_char * bytes);
 
 #endif /* __HEADERS_H__ */

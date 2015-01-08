@@ -39,7 +39,7 @@ static inline void __header_ethernet_print_mac (FILE * stream,
  * \param stream Output stream.
  * \param flags_and_offset The flags/offset field of the IPv4 header.
  */
-static inline void __header_ipv4_print_flags (FILE * const stream,
+static inline void __header_ipv4_print_flags (FILE * stream,
         u_short flags_and_offset);
 
 /**
@@ -47,8 +47,16 @@ static inline void __header_ipv4_print_flags (FILE * const stream,
  * \param stream Output stream.
  * \param protocol Protocol.
  */
-static inline void __header_ip_print_protocol (FILE * const stream,
+static inline void __header_ip_print_protocol (FILE * stream,
         u_short protocol);
+
+/**
+ * \brief Print an ARP opcode.
+ * \param stream Output stream.
+ * \param code ARP opcode.
+ */
+static inline void __header_arp_print_opcode (FILE * stream,
+        unsigned short int code);
 
 /**
  * \brief List of IP protocols.
@@ -488,6 +496,71 @@ u_int8_t header_ipv4_protocol (const u_char * bytes)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// ARP headers.
+////////////////////////////////////////////////////////////////////////////////
+
+void header_arp_print_complete (FILE * const stream, const u_char * bytes)
+{
+    const struct arphdr * header = (const struct arphdr *) bytes;
+    unsigned char hln = header->ar_hln;
+    unsigned char pln = header->ar_pln;
+
+    /* Hardware type. */
+    fprintf (stream, "%-32s\t%u\n", "Hardware type:", header->ar_hrd);
+
+    /* Protocol. */
+    fprintf (stream, "%-32s\t", "Protocol:");
+    __header_ethernet_print_protocol (stream, header->ar_pro);
+    fprintf (stream, "\n");
+
+    /* Lengths. */
+    fprintf (stream, "%-32s\t%u", "Hardware length:", hln);
+    fprintf (stream, "%-32s\t%u", "Protocol length:", pln);
+
+    /* Operation code. */
+    fprintf (stream, "%-32s\t", "Operation code:");
+    __header_arp_print_opcode (stream, header->ar_op);
+    fprintf (stream, "\n");
+
+    const u_char * addresses = bytes + sizeof (struct arphdr);
+
+    /* Sender hardware address. */
+    if (hln == ETH_ALEN)
+        fprintf (stream, "%-32s\t%s\n", "Sender hardware address:",
+            ether_ntoa ((const struct ether_addr *) addresses));
+
+    /* Sender protocol address. */
+    addresses += hln;
+    if (pln == 4)
+        fprintf (stream, "%-32s\t%s\n", "Sender protocol address:",
+            inet_ntoa (* ((const struct in_addr *) addresses)));
+
+    /* Target hardware address. */
+    addresses += pln;
+    if (hln == ETH_ALEN)
+        fprintf (stream, "%-32s\t%s\n", "Target hardware address:",
+            ether_ntoa ((const struct ether_addr *) addresses));
+
+    /* Target protocol address. */
+    addresses += hln;
+    if (pln == 4)
+        fprintf (stream, "%-32s\t%s\n", "Target protocol address:",
+            inet_ntoa (* ((const struct in_addr *) addresses)));
+
+    fprintf (stream, "\n");
+}
+
+void header_arp_print_synthetic (FILE * const stream, const u_char * bytes)
+{
+    (void) stream; (void) bytes;
+}
+
+void header_arp_print_concise (FILE * const stream, const u_char * bytes)
+{
+    (void) stream; (void) bytes;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // Misc.
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -544,11 +617,37 @@ void __header_ipv4_print_flags (FILE * const stream, u_short flags_and_offset)
             mf ? "More fragments" : (df ? "" : "No flags"));
 }
 
-static inline void __header_ip_print_protocol (FILE * const stream,
+void __header_ip_print_protocol (FILE * const stream,
         u_short protocol)
 {
     if (protocol >= 143 && protocol <= 252)
         fprintf (stream, "UNASSIGNED");
     else
         fprintf (stream, "%s", __IP_PROTOCOLS[protocol]);
+}
+
+void __header_arp_print_opcode (FILE * const stream,
+        unsigned short int code)
+{
+    const char * protocol_string = "";
+    switch (code)
+    {
+        case ARPOP_REQUEST:
+            protocol_string = "ARP request"; break;
+        case ARPOP_REPLY:
+            protocol_string = "ARP reply"; break;
+        case ARPOP_RREQUEST:
+            protocol_string = "RARP request"; break;
+        case ARPOP_RREPLY:
+            protocol_string = "RARP reply"; break;
+        case ARPOP_InREQUEST:
+            protocol_string = "InARP request"; break;
+        case ARPOP_InREPLY:
+            protocol_string = "InARP reply"; break;
+        case ARPOP_NAK:
+            protocol_string = "(ATM)ARP NAK"; break;
+        default:
+            protocol_string = "Unknown"; break;
+    }
+    fprintf (stream, "%s", protocol_string);
 }

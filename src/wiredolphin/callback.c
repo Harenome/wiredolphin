@@ -76,6 +76,7 @@ void callback_info_complete (u_char * user, const struct pcap_pkthdr * header,
             bytes = header_ipv4_data (bytes);
             break;
         case ETHERTYPE_ARP:
+            header_arp_print_complete (stdout, bytes);
             break;
         case ETHERTYPE_IPV6:
             break;
